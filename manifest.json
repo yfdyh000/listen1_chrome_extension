@@ -1,6 +1,11 @@
 {
+    "applications": {
+        "gecko": {
+            "id": "listen1-ConstLhq-YF@addons.mozilla.org",
+            "strict_min_version": "45.0"
+        }
+    },
     "background": {
-        "presistent": true,
         "scripts": ["js/background.js" ]
     },
     "browser_action": {
