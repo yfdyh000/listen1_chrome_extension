@@ -924,7 +924,6 @@
       $scope.keywords = '';
       $scope.loading = false;
       $scope.necurpage= 1;
-      $scope.necurpage= 1;
       $scope.netotalpage = 1;
       $scope.xmcurpage= 1;
       $scope.xmtotalpage = 1;
