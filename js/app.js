@@ -260,7 +260,11 @@
         $scope.closeDialog();
         // add to current playing list
         if (option_id == $scope.current_list_id) {
+                        if (Array.isArray($scope.dialog_song)) {
+                            angularPlayer.addTrackArray($scope.dialog_song);
+                        } else {
           angularPlayer.addTrack($scope.dialog_song);
+        }
         }
       });
     };
@@ -920,6 +924,7 @@
       $scope.keywords = '';
       $scope.loading = false;
       $scope.necurpage= 1;
+      $scope.necurpage= 1;
       $scope.netotalpage = 1;
       $scope.xmcurpage= 1;
       $scope.xmtotalpage = 1;
@@ -1021,6 +1026,38 @@
         $scope.result = [];
         performSearch();
       };
+
+            $scope.addSongsToPlay = function () {
+                if ($scope.result) {
+                    let selectedSongs = $scope.result.filter(v => v.checked);
+                    if (selectedSongs) {
+                        angularPlayer.addTrackArray(selectedSongs);
+                        Notification.success("已添加到当前播放歌单");
+                    }
+                }
+            };
+
+            $scope.addSongsToMyList = function () {
+                if ($scope.result) {
+                    let selectedSongs = $scope.result.filter(v => v.checked);
+                    if (selectedSongs) {
+                        $scope.$parent.showDialog(0, selectedSongs);
+                    }
+                }
+            };
+
+            $scope.onMultiSelect = function () {
+                if ($scope.result) {
+                    let selectedSongs = $scope.result.filter(v => v.checked);
+                    if (selectedSongs && selectedSongs.length > 0) {
+                        $scope.isMultiSelected = true;
+                    } else {
+                        $scope.isMultiSelected = false;
+                    }
+                } else {
+                    $scope.isMultiSelected = false;
+                }
+            };
 
       $scope.isActiveTab = function(tab){
         return $scope.tab === tab;
