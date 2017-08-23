@@ -1,29 +1,7 @@
-Listen 1 (Chrome Extension) (更新于7月15日)
-==========
-
- 增加搜索分页功能
-![Screenshotfrom2017-07-1522-33-23.png](http://pasteupload.com/images/2017/07/15/Screenshotfrom2017-07-1522-33-23.png)
-Listen 1 (Chrome Extension) (更新于7月13日)
-==========
-
-1. 调整歌单来源按钮到顶部
-
-2. 更改滚动条的样式
-
-3. 增加歌词Tab
-
-#### Chrome菜单->更多工具->发送到桌面->在窗口中打开，不要太爽
-
-[![Screenshotfrom2017-07-1316-48-16.md.png](http://pasteupload.com/images/2017/07/13/Screenshotfrom2017-07-1316-48-16.md.png)](http://pasteupload.com/image/NEQu)
-[![Screenshotfrom2017-07-1316-49-04.md.png](http://pasteupload.com/images/2017/07/13/Screenshotfrom2017-07-1316-49-04.md.png)](http://pasteupload.com/image/N4pJ)
-
-Listen 1 (Chrome Extension) （最后更新于5月27日）
-==========
-
+# Listen 1 (Browser Extension) 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
-缘起
-----
+## 缘起
 当我发现找个想听的歌因为版权听不了，需要打开好几个网站开始搜索，来回切换让我抓狂的时候，我知道是时候该做点什么了。
 
 妈妈再也不用担心我找不到我想听的歌了。这里包含了网易云音乐，虾米，QQ音乐的曲库，够全够大了吧。
@@ -34,28 +12,20 @@ Listen 1 (Chrome Extension) （最后更新于5月27日）
 
 还有精选歌单哦。
 
-Chrome安装
-----
-1. 下载项目的zip文件，在右上方有个 `Download ZIP`, 解压到本地
 
-2. chrome右上角的设置按钮下找到更多工具，打开`扩展程序`
+## 更新日志
+`2017-07-31`，由 jyma1991 完成，YF 合并。
+* 搜索结果支持多选
 
-3. 选择 `加载已解压的扩展程序`(如果没有显示先选中`开发者模式`)，选中解压后的文件夹，完成！
+`2017-07-15`，由 ConstLhq 完成
+* 增加搜索分页功能
 
-Firefox打包安装
------------
-### 打包xpi文件（或在release页面下载已经打包好的xpi文件）
-1. 将根目录下manifest_firefox.json替换manifest.json
-2. `cd listen1_chrome_extension`
-3. `zip -r ../listen1.xpi *`
+`2017-07-13`，由 ConstLhq 完成
+* 调整歌单来源按钮到顶部
+* 更改滚动条的样式
+* 增加歌词Tab
 
-### 安装
-1. 打开Firefox，加载xpi文件，完成安装
-
-更新日志
--------
 `2016-05-27`
-
 * 增加快捷键功能（输入?查看快捷键设置）
 * 支持同步播放记录到last.fm
 * 增加搜索loading时的图标(感谢@richdho的提交）
@@ -64,7 +34,6 @@ Firefox打包安装
 * 重新组织代码文件夹结构
 
 `2016-05-21`
-
 * 增加歌单分页加载功能(感谢@wild-flame的提交)
 * 修复关闭按钮随网页滚动的bug
 * 修复点击暂停按钮会重置进度条和歌词的bug
@@ -72,11 +41,9 @@ Firefox打包安装
 * 调整歌单水平位置居中
 
 `2016-05-14`
-
 * 增加firefox插件支持（感谢fulesdle的提交）
 
 `2016-05-13`
-
 * 增加我的歌单功能，可以收藏现有歌单，并创建自己的歌单
 * 点击Listen 1和图标可以回到首页
 * 标记了部分因版权无法播放的歌曲,增加版权提示
@@ -86,7 +53,6 @@ Firefox打包安装
 
 
 `2016-05-08`
-
 * 增加歌词显示
 * 精选歌单：添加歌单到当前播放列表，可点击跳转到原始链接
 * 修复了搜索qq音乐时的乱码问题
@@ -95,14 +61,13 @@ Firefox打包安装
 * 优化性能，删除了不必要的事件消息触发
 
 `2016-05-02`
-
 * 增加音量控制
 
-TODO
-----
-分页加载
+## TODO
+* 分页加载
+
+* 搜索结果多选时，单击条目可正常选中，单击左侧的复选框无效果，需修正。
 
 
-License
---------
+## License
 MIT
