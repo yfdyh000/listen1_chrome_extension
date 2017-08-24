@@ -260,7 +260,11 @@
         $scope.closeDialog();
         // add to current playing list
         if (option_id == $scope.current_list_id) {
+                        if (Array.isArray($scope.dialog_song)) {
+                            angularPlayer.addTrackArray($scope.dialog_song);
+                        } else {
           angularPlayer.addTrack($scope.dialog_song);
+        }
         }
       });
     };
@@ -1022,6 +1026,38 @@
         performSearch();
       };
 
+            $scope.addSongsToPlay = function () {
+                if ($scope.result) {
+                    let selectedSongs = $scope.result.filter(v => v.checked);
+                    if (selectedSongs) {
+                        angularPlayer.addTrackArray(selectedSongs);
+                        Notification.success("已添加到当前播放歌单");
+                    }
+                }
+            };
+
+            $scope.addSongsToMyList = function () {
+                if ($scope.result) {
+                    let selectedSongs = $scope.result.filter(v => v.checked);
+                    if (selectedSongs) {
+                        $scope.$parent.showDialog(0, selectedSongs);
+                    }
+                }
+            };
+
+            $scope.onMultiSelect = function () {
+                if ($scope.result) {
+                    let selectedSongs = $scope.result.filter(v => v.checked);
+                    if (selectedSongs && selectedSongs.length > 0) {
+                        $scope.isMultiSelected = true;
+                    } else {
+                        $scope.isMultiSelected = false;
+                    }
+                } else {
+                    $scope.isMultiSelected = false;
+                }
+            };
+
       $scope.isActiveTab = function(tab){
         return $scope.tab === tab;
       };
@@ -1331,7 +1367,7 @@
   //   $scope.token = "";
 
   //   $scope.getLoginInfo = function(){
-  //     $http.get('/dbvalidcode').success(function(data) {
+  //     $http.get('/dbvalidcode').then(function onSuccess(response) {
   //       if (data.isLogin == 0) {
   //         $scope.validcode_url = data.captcha.path;
   //         $scope.token = data.captcha.token;
@@ -1353,7 +1389,7 @@
   //       headers: {
   //         'Content-Type': 'application/x-www-form-urlencoded'
   //       }
-  //     }).success(function(data) {
+  //     }).then(function onSuccess(response) {
   //       if (data.result.success == '1') {
   //         $scope.isDoubanLogin = true;
   //         $rootScope.$broadcast('isdoubanlogin:update', true);
@@ -1371,7 +1407,7 @@
   //     $http({
   //       url: '/dblogout',
   //       method: 'GET'
-  //     }).success(function(data) {
+  //     }).then(function onSuccess(response) {
   //       $scope.isDoubanLogin = false;
   //       $rootScope.$broadcast('isdoubanlogin:update', false);
   //       Notification.success("退出登录豆瓣成功");
@@ -1387,7 +1423,7 @@
   //       headers: {
   //         'Content-Type': 'application/x-www-form-urlencoded'
   //       }
-  //     }).success(function(data) {
+  //     }).then(function onSuccess(response) {
   //       $scope.status = '正在进行中：' + data.result.progress + '%';
   //       $scope.start();
   //     });
@@ -1418,7 +1454,7 @@
   //       headers: {
   //         'Content-Type': 'application/x-www-form-urlencoded'
   //       }
-  //     }).success(function(data) {
+  //     }).then(function onSuccess(response) {
   //       $scope.status = '正在进行中：' + data.result.progress + '%';
   //       if (data.result.progress == 100) {
   //         $scope.stop();
