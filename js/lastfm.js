@@ -79,7 +79,7 @@
         $http.get(url).then(function onSuccess(response) {
           var token = response.data.token;
           localStorage.setObject('lastfmtoken', token);
-          var grant_url = 'http://www.last.fm/api/auth/?api_key=' + options.apiKey + '&token=' + token;
+          var grant_url = 'https://www.last.fm/api/auth/?api_key=' + options.apiKey + '&token=' + token;
           $window.open(grant_url, '_blank');
           status = 1;
           if (callback != null) {
