@@ -14,6 +14,9 @@
 
 
 ## 更新日志
+`2017-09-11`
+* 更新QQ音乐地址，修复方法取自 https://github.com/listen1/listen1_chrome_extension/issues/90#issuecomment-328397516 (@huangzhongxin)
+
 `2017-08-24`，YF 完成。
 * 更新 jQuery 库，1.x至3.x。
 * 更新 angular 相关库，迁移 $http 语法到新格式。
