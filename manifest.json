@@ -2,7 +2,7 @@
     "applications": {
         "gecko": {
             "id": "listen1-community@addons.mozilla.org",
-            "strict_min_version": "45.0"
+            "strict_min_version": "48.0"
         }
     },
     "background": {
