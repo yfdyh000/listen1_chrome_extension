@@ -77,10 +77,21 @@ var add_myplaylist = function(playlist_id, track) {
         return;
     }
     if (Array.isArray(track)) {
-        playlist.tracks.push(...track);
+        playlist.tracks = playlist.tracks.concat(track);
     } else {
         playlist.tracks.push(track);
     }
+
+    // dedupe
+    var newTracks = [], trackIds = [];
+    playlist.tracks.forEach(function (track) {
+       if (trackIds.indexOf(track.id) === -1) {
+           newTracks.push(track);
+           trackIds.push(track.id);
+       }
+    });
+    playlist.tracks = newTracks;
+
     localStorage.setObject(playlist_id, playlist);
 }
 
@@ -113,11 +124,13 @@ var create_myplaylist = function(playlist_title, track) {
 
     playlist.is_mine = 1;
     playlist.info = info;
+
     if (Array.isArray(track)) {
         playlist.tracks = track;
     } else {
-            playlist.tracks = [track];
+        playlist.tracks = [track];
     }
+
     save_myplaylist(playlist);
 }
 

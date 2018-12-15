@@ -76,10 +76,11 @@
 
       function getAuth(callback){
         var url = apiUrl + '?method=auth.gettoken&api_key=' + options.apiKey  + '&format=json';
-        $http.get(url).then(function onSuccess(response) {
-          var token = response.data.token;
+        $http.get(url).then(function(response) {
+          var data = response.data;
+          var token = data.token;
           localStorage.setObject('lastfmtoken', token);
-          var grant_url = 'https://www.last.fm/api/auth/?api_key=' + options.apiKey + '&token=' + token;
+          var grant_url = 'http://www.last.fm/api/auth/?api_key=' + options.apiKey + '&token=' + token;
           $window.open(grant_url, '_blank');
           status = 1;
           if (callback != null) {
@@ -137,11 +138,12 @@
         };
         var apiSig = generateSign(params);
         var url = apiUrl + '?' + createQueryString(params) + '&api_sig=' + apiSig + '&format=json';
-        $http.get(url).then(function onSuccess(response) {
-          mySession = response.data.session;
+        $http.get(url).then(function(response){
+          var data = response.data;
+          mySession = data.session;
           localStorage.setObject('lastfmsession', mySession);
           callback(mySession);
-        }).catch(function (errResponse, status) {
+        }).error(function (errResponse, status) {
           if(status == 403){
             callback(null);
           }
@@ -161,9 +163,10 @@
           params.api_sig = generateSign(params);
 
           var url = apiUrl + '?' + createQueryString(params) + '&format=json';
-          $http.post(url).then(function onSuccess(response) {
+          $http.post(url).then(function(response){
+            var data = response.data;
             if (callback != null) {
-              callback(response.data);
+              callback(data);
             }
           });
         });
@@ -187,9 +190,10 @@
           params.api_sig = generateSign(params);
 
           var url = apiUrl + '?' + createQueryString(params) + '&format=json';
-          $http.post(url).then(function onSuccess(response) {
+          $http.post(url).then(function(response){
+            var data = response.data;
             if (callback != null) {
-              callback(response.data);
+              callback(data);
             }
           });
         });
@@ -210,9 +214,10 @@
           params.api_sig = generateSign(params);
 
           var url = apiUrl + '?' + createQueryString(params) + '&format=json';
-          $http.post(url).then(function onSuccess(response) {
+          $http.post(url).then(function(response){
+            var data = response.data;
             if (callback != null) {
-              callback(response.data);
+              callback(data);
             }
           });
         });

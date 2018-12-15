@@ -10,8 +10,9 @@
       return value && JSON.parse(value);
   }
 
-  var app = angular.module('listenone', ['angularSoundManager', 'ui-notification', 'loWebManager', 'cfp.hotkeys', 'lastfmClient'])
-    .config( [
+  var app = angular.module('listenone', ['angularSoundManager', 'ui-notification', 'loWebManager', 'cfp.hotkeys', 'lastfmClient', 'githubClient'])
+
+  app.config( [
     '$compileProvider',
     function( $compileProvider )
     {
@@ -42,6 +43,7 @@
       apiSecret: 'd68f1dfc6ff43044c96a79ae7dfb5c27'
     });
   });
+
 
   app.run(['angularPlayer', 'Notification', 'loWeb', function(angularPlayer, Notification, loWeb) {
     angularPlayer.setBootstrapTrack(
@@ -79,16 +81,25 @@
     if (sourceId == 2) {
       return 'qq';
     }
+    if (sourceId == 4) {
+      return 'kugou';
+    }
+    if (sourceId == 5) {
+      return 'kuwo';
+    }
+    if (sourceId == 6) {
+      return 'bilibili';
+    }
   }
 
   // control main view of page, it can be called any place
   app.controller('NavigationController', ['$scope', '$http',
     '$httpParamSerializerJQLike', '$timeout',
     'angularPlayer', 'Notification', '$rootScope', 'loWeb',
-    'hotkeys', 'lastfm',
+    'hotkeys', 'lastfm', 'github', 'gist',
     function($scope, $http, $httpParamSerializerJQLike,
       $timeout, angularPlayer, Notification, $rootScope,
-      loWeb, hotkeys, lastfm) {
+      loWeb, hotkeys, lastfm, github, gist) {
 
     $rootScope.page_title = "Listen 1";
     $scope.window_url_stack = [];
@@ -106,20 +117,13 @@
     $scope.isDoubanLogin = false;
 
     $scope.lastfm = lastfm;
-    $scope.lyricArray = [];
-    $scope.lyricLineNumber= -1;
+    $scope.github = github;
+
     $scope.$on('isdoubanlogin:update', function(event, data) {
       $scope.isDoubanLogin = data;
     });
 
-    $scope.$on('updateLyric', function(event, data) {
-      $scope.lyricArray = data;
-    });
-
-    $scope.$on('lyricLineNumber', function(event, data) {
-      $scope.lyricLineNumber = data;
-    });
-
+    // tag
     $scope.showTag = function(tag_id){
       $scope.current_tag = tag_id;
       $scope.is_window_hidden = 1;
@@ -133,13 +137,28 @@
       $scope.playlist_title = '';
       $scope.playlist_source_url = '';
       $scope.songs = [];
+      $scope.window_type = 'list';
     };
 
     $scope.showWindow = function(url){
+      if ($scope.window_url_stack.length > 0 &&  $scope.window_url_stack[$scope.window_url_stack.length-1] == url) {
+        return;
+      }
       $scope.is_window_hidden = 0;
       $scope.resetWindow();
 
+      if ($scope.window_url_stack.length > 0 && $scope.window_url_stack[$scope.window_url_stack.length-1] == '/now_playing') {
+        // if now playing is top, pop it
+        $scope.window_url_stack.splice(-1,1);
+      }
+
+      if (url == '/now_playing') {
+        $scope.window_type = 'track';
+        $scope.window_url_stack.push(url);
+        return;
+      }
       $scope.window_url_stack.push(url);
+
       loWeb.get(url).success(function(data) {
           if (data.status == '0') {
             Notification.info(data.reason);
@@ -152,6 +171,7 @@
           $scope.playlist_source_url = data.info.source_url;
           $scope.list_id = data.info.id;
           $scope.is_mine = (data.info.id.slice(0,2) == 'my');
+          $scope.window_type = 'list';
       });
     };
 
@@ -169,6 +189,11 @@
       else {
         $scope.resetWindow();
         var url = $scope.window_url_stack[$scope.window_url_stack.length-1];
+
+        if (url == '/now_playing') {
+          $scope.window_type = 'track';
+          return;
+        }
         loWeb.get(url).success(function(data) {
             $scope.songs = data.tracks;
             $scope.list_id = data.info.id;
@@ -241,6 +266,40 @@
         $scope.dialog_title = '连接到Last.fm';
         $scope.dialog_type = 4;
       }
+      if (dialog_type == 5) {
+        $scope.dialog_title = '打开歌单';
+        $scope.dialog_type = 5;
+      }
+	    if (dialog_type == 6) {
+        $scope.dialog_title = '歌单导入合并';
+		    var url = '/show_myplaylist';
+        loWeb.get(url).success(function(data) {
+            $scope.myplaylist = data.result;
+        });
+        $scope.dialog_type = 6;
+      }
+      if (dialog_type == 7) {
+        $scope.dialog_title = '连接到Github.com';
+        $scope.dialog_type = 7;
+      }
+      if (dialog_type == 8) {
+        $scope.dialog_title = '导出到Github Gist';
+        $scope.dialog_type = 8;
+        gist.listExistBackup().then(function(res){
+          $scope.myBackup = res;
+        }, function(err){
+          $scope.myBackup = [];
+        });
+      }
+      if (dialog_type == 10) {
+        $scope.dialog_title = '从Github Gist导入';
+        $scope.dialog_type = 10;
+        gist.listExistBackup().then(function(res){
+          $scope.myBackup = res;
+        }, function(err){
+          $scope.myBackup = [];
+        });
+      }
     };
 
     $scope.chooseDialogOption = function(option_id) {
@@ -260,21 +319,17 @@
         $scope.closeDialog();
         // add to current playing list
         if (option_id == $scope.current_list_id) {
-                        if (Array.isArray($scope.dialog_song)) {
-                            angularPlayer.addTrackArray($scope.dialog_song);
-                        } else {
           angularPlayer.addTrack($scope.dialog_song);
-        }
         }
       });
     };
 
-    $scope.newDialogOption = function() {
-      $scope.dialog_type = 1;
+    $scope.newDialogOption = function(option) {
+      $scope.dialog_type = option;
     };
 
-    $scope.cancelNewDialog = function() {
-      $scope.dialog_type = 0;
+    $scope.cancelNewDialog = function(option) {
+      $scope.dialog_type = option;
     };
 
     $scope.createAndAddPlaylist = function() {
@@ -317,6 +372,27 @@
         $scope.cover_img_url = $scope.dialog_cover_img_url;
         Notification.success('修改歌单成功');
         $scope.closeDialog();
+      });
+    };
+
+	$scope.mergePlaylist = function(target_list_id) {
+	  Notification.info('正在合并导入歌单……');
+      var url = '/merge_playlist';
+      loWeb.post({
+        url: url,
+        method: 'POST',
+        data: $httpParamSerializerJQLike({
+          source: $scope.list_id,
+          target: target_list_id,
+        }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).success(function() {
+        Notification.success('合并歌单成功');
+        $scope.closeDialog();
+		$scope.popWindow();
+		$scope.showPlaylist($scope.list_id);
       });
     };
 
@@ -473,11 +549,60 @@
             var value = data[key];
             localStorage.setObject(key, value);
           }
-          Notification.success("恢复我的歌单成功");
+          Notification.success("成功导入我的歌单");
         }
       };
       reader.readAsText(fileObject);
     }
+
+    $scope.gistBackupLoading = false;
+    $scope.backupMySettings2Gist= function(gistId, isPublic){
+      var items = {};
+      for ( var i = 0; i < localStorage.length; i++ ) {
+        var key =  localStorage.key(i);
+        if(key!=="gistid" && key !== 'githubOauthAccessKey'){ // avoid token leak
+          var value = localStorage.getObject(key);
+          items[key] = value;
+        }
+      }
+      var gistFiles = gist.json2gist(items);
+      $scope.gistBackupLoading = true;
+      gist.backupMySettings2Gist(gistFiles, gistId, isPublic).then(function(){
+        Notification.clearAll();
+        Notification.success("成功导出我的歌单到Gist");
+        $scope.gistBackupLoading = false;
+      },function(err){
+        Notification.clearAll();
+        Notification.warning("导出我的歌单失败，检查后重试");
+        $scope.gistBackupLoading = false;
+      });
+      Notification({message: "正在导出我的歌单到Gist...", delay: null});
+    }
+
+    $scope.gistRestoreLoading = false;
+    $scope.importMySettingsFromGist = function(gistId){
+      $scope.gistRestoreLoading = true;
+      gist.importMySettingsFromGist(gistId).then(function(raw){
+        var data = gist.gist2json(raw);
+        for ( var key in data) {
+          var value = data[key];
+          localStorage.setObject(key, value);
+        }
+        Notification.clearAll();
+        Notification.success("导入我的歌单成功");
+        $scope.gistRestoreLoading = false;
+      },function(err){
+        Notification.clearAll();
+        if(err==404){
+          Notification.warning("未找到备份歌单，请先备份");
+        }else{
+          Notification.warning("导入我的歌单失败，检查后重试");
+        }
+        $scope.gistRestoreLoading = false;
+      })
+      Notification({message: "正在从Gist导入我的歌单...", delay: null});
+    }
+
 
     $scope.showShortcuts = function() {
       hotkeys.toggleCheatSheet();
@@ -492,7 +617,26 @@
       }
     });
 
-
+    $scope.openUrl = function(url) {
+      loWeb.post({
+        url: '/parse_url',
+        method: 'POST',
+        data: $httpParamSerializerJQLike({
+          url: url
+        }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).success(function(data) {
+        var result = data.result;
+        if (result !== undefined) {
+          $scope.showPlaylist(result.id);
+        }
+        else {
+          Notification.info('未能打开输入的歌单地址');
+        }
+      });
+    }
 
   }]);
 
@@ -503,6 +647,14 @@
         var onChangeHandler = scope.$eval(attrs.customOnChange);
         element.bind('change', onChangeHandler);
       }
+    };
+  });
+
+  app.directive('volumeWheel', function() {
+    return function (scope, element, attrs) {
+        element.bind('mousewheel', function(){
+          scope.adjustVolume(window.event.wheelDelta>0)
+        });
     };
   });
 
@@ -524,6 +676,7 @@
 
       $scope.scrobbleTrackId = null;
       $scope.scrobbleTimer = new Timer();
+      $scope.adjustVolume = angularPlayer.adjustVolume;
 
       function switchMode(mode){
         //playmode 0:loop 1:shuffle 2:repeat one
@@ -587,7 +740,7 @@
       }
 
       $scope.saveLocalCurrentPlaying = function() {
-        localStorage.setObjct('current-playing', angularPlayer.playlist)
+        localStorage.setObject('current-playing', angularPlayer.playlist)
       }
 
       $scope.changePlaymode = function() {
@@ -600,6 +753,12 @@
       $scope.$on('music:volume', function(event, data) {
           $scope.$apply(function() {
               $scope.volume = data;
+          });
+      });
+
+      $scope.$on('github:status', function(event, data) {
+          $scope.$apply(function() {
+              $scope.githubStatus = data;
           });
       });
 
@@ -705,6 +864,12 @@
       });
 
       $scope.$on('music:isPlaying', function(event, data) {
+        if (data) {
+          $rootScope.page_title = '▶ ' + $rootScope.page_title.slice($rootScope.page_title.indexOf(' '));
+        }
+        else {
+          $rootScope.page_title = '❚❚ ' + $rootScope.page_title.slice($rootScope.page_title.indexOf(' '));
+        };
         if (!lastfm.isAuthorized()) {
           return;
         }
@@ -748,7 +913,12 @@
           var timeReg = /\[(\d{2,})\:(\d{2})(?:\.(\d{1,3}))?\]/g;
 
           while(timeRegResult = timeReg.exec(line)) {
-            var content = line.replace(/\[(\d{2,})\:(\d{2})(?:\.(\d{1,3}))?\]/g, '');
+            var content = line.replace(/\[(\d{2,})\:(\d{2})(?:\.(\d{1,3}))?\]/g, '')
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")
+              .replace(/&amp;/g, "&")
+              .replace(/&quot;/g, '"')
+              .replace(/&apos;/g, "'");
             var min = parseInt(timeRegResult[1]);
             var sec = parseInt(timeRegResult[2]);
             var microsec = 0;
@@ -814,7 +984,6 @@
             return;
           }
           $scope.lyricArray = parseLyric(lyric);
-          $scope.$emit("updateLyric", $scope.lyricArray)
         });
         $scope.lastTrackId = data;
       });
@@ -832,16 +1001,12 @@
         }
         if (lastObject && lastObject.lineNumber != $scope.lyricLineNumber) {
           var lineHeight = 20;
-          var lineElement = $(".menu .lyric p")[lastObject.lineNumber];
-          var lineElementTab = $(".lyric-content .lyric p")[lastObject.lineNumber];
+          var lineElement = $(".lyric p")[lastObject.lineNumber];
           var windowHeight = 270;
-          var windowHeightTab = $(".lyric-content .lyric").height()
-          var offset = lineElement.offsetTop - windowHeight/2;
-          var offsetTab = lineElementTab.offsetTop - windowHeightTab/2;
-          $(".menu .lyric").animate({ scrollTop: offset+"px" }, 500);
-          $(".lyric-content .lyric").animate({ scrollTop: offsetTab+100+"px" }, 500);
+          var AdditionOffset = 4;
+          var offset = lineElement.offsetTop - windowHeight/2 + AdditionOffset;
+          $(".lyric").animate({ scrollTop: offset+"px" }, 500);
           $scope.lyricLineNumber = lastObject.lineNumber;
-          $scope.$emit("lyricLineNumber",lastObject.lineNumber)
         }
       });
 
@@ -920,149 +1085,36 @@
 
   app.controller('InstantSearchController', ['$scope', '$http', '$timeout', 'angularPlayer', 'loWeb',
     function($scope, $http, $timeout, angularPlayer, loWeb) {
+      $scope.originpagelog = [1, 1, 1, 1, 1, 1, 1];  // [网易,虾米,QQ,NULL,酷狗,酷我,bilibili]
       $scope.tab = 0;
       $scope.keywords = '';
       $scope.loading = false;
-      $scope.necurpage= 1;
-      $scope.netotalpage = 1;
-      $scope.xmcurpage= 1;
-      $scope.xmtotalpage = 1;
-      $scope.qqcurpage= 1;
-      $scope.qqtotalpage = 1;
+      $scope.curpagelog = $scope.originpagelog.slice(0);
+      $scope.totalpagelog = $scope.originpagelog.slice(0);
       $scope.curpage = 1;
       $scope.totalpage = 1;
-      function performSearch(){
-        loWeb.get('/search?source=' + getSourceName($scope.tab) + '&keywords=' + $scope.keywords+'&curpage='+getCurpage()).success(function(data) {
-          // update the textarea
-          $scope.result = data.result;
-          setTotalPage(data.total);
-          $scope.loading = false;
-        });
-      }
-      function getCurpage(){
-        switch ($scope.tab) {
-          case 0:
-            return $scope.necurpage;
-            break;
-          case 1:
-            return $scope.xmcurpage;
-            break;
-          case 2:
-            return $scope.qqcurpage;
-            break;
 
-        }
-      }
-      function setCurpage(p){
-        switch ($scope.tab) {
-          case 0:
-            $scope.curpage = $scope.necurpage = p ;
-            break;
-          case 1:
-            $scope.curpage = $scope.xmcurpage = p;
-            break;
-          case 2:
-            $scope.curpage = $scope.qqcurpage = p;
-            break;
-
-        }
-      }
-      function getTotalpage(){
-        switch ($scope.tab) {
-          case 0:
-            return $scope.netotalpage;
-            break;
-          case 1:
-            return $scope.netotalpage;
-            break;
-          case 2:
-            return $scope.qqtotalpage;
-            break;
-
-        }
-      }
-      function setTotalPage(totalNum){
-        switch ($scope.tab) {
-          case 0:
-            $scope.totalpage=$scope.netotalpage=Math.ceil(totalNum/20);
-            break;
-          case 1:
-            $scope.totalpage=$scope.xmtotalpage=Math.ceil(totalNum/20);
-            break;
-          case 2:
-            $scope.totalpage=$scope.qqtotalpage=Math.ceil(totalNum/20);
-            break;
-
-        }
-      }
-      function pageChangeBy(num){
-        switch ($scope.tab) {
-          case 0:
-            $scope.curpage=$scope.necurpage+=num;
-
-            break;
-          case 1:
-            $scope.curpage=$scope.xmcurpage+=num;
-            break;
-          case 2:
-            $scope.curpage=$scope.qqcurpage+=num;
-            break;
-        }
-      }
-      $scope.nextPage = function(){
-        pageChangeBy(1)
-        performSearch();
-
-      }
-      $scope.previousPage = function(){
-        pageChangeBy(-1)
-        performSearch();
-      }
       $scope.changeTab = function(newTab){
-        $scope.tab = newTab;
-        setCurpage(1);
         $scope.loading = true;
+        $scope.tab = newTab;
         $scope.result = [];
-        performSearch();
+        updateCurrentPage();
+        updateTotalPage();
+
+        if ($scope.keywords===''){
+          $scope.loading = false;
+        }else{
+          performSearch();
+        }
       };
-
-            $scope.addSongsToPlay = function () {
-                if ($scope.result) {
-                    let selectedSongs = $scope.result.filter(v => v.checked);
-                    if (selectedSongs) {
-                        angularPlayer.addTrackArray(selectedSongs);
-                        Notification.success("已添加到当前播放歌单");
-                    }
-                }
-            };
-
-            $scope.addSongsToMyList = function () {
-                if ($scope.result) {
-                    let selectedSongs = $scope.result.filter(v => v.checked);
-                    if (selectedSongs) {
-                        $scope.$parent.showDialog(0, selectedSongs);
-                    }
-                }
-            };
-
-            $scope.onMultiSelect = function () {
-                if ($scope.result) {
-                    let selectedSongs = $scope.result.filter(v => v.checked);
-                    if (selectedSongs && selectedSongs.length > 0) {
-                        $scope.isMultiSelected = true;
-                    } else {
-                        $scope.isMultiSelected = false;
-                    }
-                } else {
-                    $scope.isMultiSelected = false;
-                }
-            };
 
       $scope.isActiveTab = function(tab){
         return $scope.tab === tab;
       };
 
       $scope.$watch('keywords', function (tmpStr) {
+        updateCurrentPage(-1);
+        updateTotalPage(-1);
         if (!tmpStr || tmpStr.length === 0){
           $scope.result = [];
           return 0;
@@ -1071,25 +1123,65 @@
         // go ahead and retrieve the data
         if (tmpStr === $scope.keywords)
         {
-          setCurpage(1)
           performSearch();
         }
       });
+
+      function performSearch(){
+        loWeb.get('/search?source=' + getSourceName($scope.tab) + '&keywords=' + $scope.keywords+'&curpage='+ $scope.curpage).success(function(data) {
+          // update the textarea
+          $scope.result = data.result;
+          updateTotalPage(data.total);
+          $scope.loading = false;
+          // scroll back to top when finish searching
+          $('.site-wrapper-innerd').scrollTop(0);
+        });
+      }
+
+      function updateCurrentPage(cp){
+          if(cp === -1){  // when search words changes,pagenums should be reset.
+              $scope.curpagelog = $scope.originpagelog.slice(0);
+              $scope.curpage = 1;
+          }
+          else if(cp >= 0)
+              $scope.curpage = $scope.curpagelog[$scope.tab] = cp;
+          else  // only tab changed
+              $scope.curpage = $scope.curpagelog[$scope.tab];
+      }
+
+      function updateTotalPage(totalItem){
+          if(totalItem === -1) {
+              $scope.totalpagelog = $scope.originpagelog.slice(0);
+              $scope.totalpage = 1;
+          }
+          else if(totalItem >=0)
+            $scope.totalpage=$scope.totalpagelog[$scope.tab] = Math.ceil(totalItem/20);
+          else
+            //just switch tab
+              $scope.totalpage=$scope.totalpagelog[$scope.tab];
+      }
+
+      $scope.nextPage = function(){
+        $scope.curpage = $scope.curpagelog[$scope.tab] += 1;
+        performSearch();
+      }
+
+      $scope.previousPage = function(){
+          $scope.curpage = $scope.curpagelog[$scope.tab] -= 1;
+          performSearch();
+      }
   }]);
 
   app.directive('pagination',function(){
     return {
       restrict: "EA",
-      replace:true,
-			template: ' <button class="btn btn-sm btn-pagination" ng-click="previousPage()" ng-disabled="curpage==1"> 上一页</button>\
+      replace:false,
+      template: ' <button class="btn btn-sm btn-pagination" ng-click="previousPage()" ng-disabled="curpage==1"> 上一页</button>\
      <label> {{curpage}}/{{totalpage}} 页 </label>\
      <button class="btn btn-sm btn-pagination" ng-click="nextPage()" ng-disabled="curpage==totalpage"> 下一页</button>',
-			replace: false,
-			link: function(scope, element, attrs) {
-
-    }
   }
-})
+});
+
   app.directive('errSrc', function() {
     // http://stackoverflow.com/questions/16310298/if-a-ngsrc-path-resolves-to-a-404-is-there-a-way-to-fallback-to-a-default
     return {
@@ -1367,7 +1459,7 @@
   //   $scope.token = "";
 
   //   $scope.getLoginInfo = function(){
-  //     $http.get('/dbvalidcode').then(function onSuccess(response) {
+  //     $http.get('/dbvalidcode').success(function(data) {
   //       if (data.isLogin == 0) {
   //         $scope.validcode_url = data.captcha.path;
   //         $scope.token = data.captcha.token;
@@ -1389,7 +1481,7 @@
   //       headers: {
   //         'Content-Type': 'application/x-www-form-urlencoded'
   //       }
-  //     }).then(function onSuccess(response) {
+  //     }).success(function(data) {
   //       if (data.result.success == '1') {
   //         $scope.isDoubanLogin = true;
   //         $rootScope.$broadcast('isdoubanlogin:update', true);
@@ -1407,7 +1499,7 @@
   //     $http({
   //       url: '/dblogout',
   //       method: 'GET'
-  //     }).then(function onSuccess(response) {
+  //     }).success(function(data) {
   //       $scope.isDoubanLogin = false;
   //       $rootScope.$broadcast('isdoubanlogin:update', false);
   //       Notification.success("退出登录豆瓣成功");
@@ -1423,7 +1515,7 @@
   //       headers: {
   //         'Content-Type': 'application/x-www-form-urlencoded'
   //       }
-  //     }).then(function onSuccess(response) {
+  //     }).success(function(data) {
   //       $scope.status = '正在进行中：' + data.result.progress + '%';
   //       $scope.start();
   //     });
@@ -1454,7 +1546,7 @@
   //       headers: {
   //         'Content-Type': 'application/x-www-form-urlencoded'
   //       }
-  //     }).then(function onSuccess(response) {
+  //     }).success(function(data) {
   //       $scope.status = '正在进行中：' + data.result.progress + '%';
   //       if (data.result.progress == 100) {
   //         $scope.stop();

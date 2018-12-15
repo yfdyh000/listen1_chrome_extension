@@ -10,6 +10,19 @@ function getProviderByName(sourceName) {
     if (sourceName == 'qq') {
         return qq;
     }
+    if (sourceName == 'kugou') {
+        return kugou;
+    }
+    if (sourceName == 'kuwo') {
+        return kuwo;
+    }
+    if (sourceName == 'bilibili') {
+        return bilibili;
+    }
+}
+
+function getAllProviders(){
+    return [netease, xiami, qq, kugou, kuwo, bilibili];
 }
 
 function getProviderByItemId(itemId) {
@@ -22,6 +35,15 @@ function getProviderByItemId(itemId) {
     }
     if (prefix == 'qq') {
         return qq;
+    }
+    if (prefix == 'kg') {
+        return kugou;
+    }
+    if (prefix == 'kw') {
+        return kuwo;
+    }
+    if (prefix == 'bi') {
+        return bilibili;
     }
     if (prefix == 'my') {
         return myplaylist;
@@ -63,8 +85,8 @@ function($rootScope, $log, $http, $httpParamSerializerJQLike) {
                 var url = '/playlist?list_id=' + list_id;
                 return {
                     success: function(fn) {
-                        provider.get_playlist(url, $http).then(function onSuccess(response) {
-                            myplaylist.save_myplaylist(response.data);
+                            provider.get_playlist(url, $http, $httpParamSerializerJQLike).success(function(data){
+                            myplaylist.save_myplaylist(data);
                             fn();
                         });
                     }
@@ -122,20 +144,62 @@ function($rootScope, $log, $http, $httpParamSerializerJQLike) {
                     }
                 };
             }
+            if (request.url.search('/parse_url') != -1) {
+                var url = getParameterByName('url', url+'?'+request.data);
+                var providers = getAllProviders();
+                var result = undefined;
+                for(var i=0; i<providers.length; i++) {
+                    var r = providers[i].parse_url(url);
+                    if (r !== undefined) {
+                        result = r;
+                        break;
+                    }
+                }
+                return {
+                    success: function(fn){
+                        return fn({'result': result});
+                    }
+                }
+            }
+			if (request.url.search('/merge_playlist') != -1) {
+				var source = getParameterByName('source', url+'?'+request.data);
+				var target = getParameterByName('target', url+'?'+request.data);
+				var tarData = (localStorage.getObject(target)).tracks;
+				var srcData = (localStorage.getObject(source)).tracks;
+				var isInSourceList = false;
+                for(var i in tarData){
+					isInSourceList = false;
+					for(var j in srcData){
+						if(tarData[i].id==srcData[j].id){
+							isInSourceList = true;
+							break;
+						}
+					};
+					if(!isInSourceList){
+						myplaylist.add_myplaylist(source, tarData[i]);
+					};
+				};
+                return {
+                    success: function(fn) {
+                        fn();
+                    }
+                };
+            }
         },
         bootstrapTrack: function(success, failure) {
-            return function(sound, track, callback){
+            return function(sound, track, playerSuccessCallback, playerFailCallback){
                 // always refresh url, becaues url will expires
                 // if (sound.url.search('http') != -1){
                 //     callback();
                 //     return;
                 // }
                 function successCallback() {
-                    callback();
+                    playerSuccessCallback();
                     success();
                 }
 
                 function failureCallback() {
+                    playerFailCallback();
                     failure();
                 }
                 var source = track.source;
