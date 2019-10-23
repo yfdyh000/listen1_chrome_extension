@@ -6,6 +6,7 @@
  "_KUGOU_MUSIC": "酷狗音乐",
  "_KUWO_MUSIC": "酷我音乐",
  "_BILIBILI_MUSIC": "哔哩哔哩",
+ "_MIGU_MUSIC": "咪咕音乐",
  "_PLATFORM_UNION": "平台聚合",
  "_PLAYLISTS": "精选歌单",
  "_MY_MUSIC": "我的音乐",
@@ -58,6 +59,8 @@
  "_SHORTCUTS": "快捷键",
  "_VIEW_SHORTCUTS_LIST": "查看快捷键列表",
  "_GLOBAL_SHORTCUTS_NOTICE": "启用全局快捷键: Ctrl(Cmd) + Alt + 左箭头 (上一首)，Ctrl(Cmd) + Alt + 右箭头 (下一首)",
+ "_LYRIC_DISPLAY": "歌词显示",
+ "_SHOW_DESKTOP_LYRIC": "显示桌面歌词",
  "_CONNECT_TO_LASTFM": "连接到last.fm",
  "_ABOUT": "关于",
  "_HOMEPAGE": "主页",
@@ -75,10 +78,15 @@
  "_IMPORTING_PLAYLIST": "正在导入歌单...",
  "_IMPORTING_PLAYLIST_SUCCESS": "导入歌单成功",
  "_REMOVE_PLAYLIST_SUCCESS": "删除歌单成功",
+ "_REMOVE_SONG_FROM_PLAYLIST_SUCCESS": "删除歌曲成功",
  "_ADD_TO_QUEUE_SUCCESS": "添加到当前播放成功",
  "_COPYRIGHT_ISSUE": "版权原因无法播放，请搜索其他平台",
+ "_ADD_TO_PLAYLIST_SUCCESS": "收藏到我的歌单成功",
  "_INPUT_NEW_PLAYLIST_TITLE": "输入新歌单名称",
  "_FAIL_OPEN_PLAYLIST_URL": "未能打开输入的歌单地址",
  "_EXAMPLE": "例如",
-  "_COMFIRM": "确认"
+ "_COMFIRM": "确认",
+ "_THEME": "主题",
+ "_THEME_WHITE": "简约白",
+ "_THEME_BLACK": "深空灰"
 }

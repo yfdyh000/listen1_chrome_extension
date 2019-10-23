@@ -1,6 +1,6 @@
-Listen 1 (Chrome Extension) V2.1.2
+Listen 1 (Chrome Extension) V2.5.1
 ==========
-（Last Update 12/30/2018)
+（Last Update Sep 7th, 2019)
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
@@ -33,6 +33,36 @@ Install (Firefox)
 
 Changelog
 -------
+`2019-09-07`
+* fix migu
+
+`2019-08-09`
+* add dark theme
+
+`2019-07-03`
+* fix migu play error
+
+`2019-06-24`
+* add migu music
+* fix kugou play bug
+* fix netease play bug
+
+`2019-06-23`
+* fix connect to github.com error
+
+`2019-05-26`
+* fix kugou music can't play bug
+
+`2019-04-26`
+* fix xiami music can't play bug
+* fix footer player out of page bug
+
+`2019-03-03`
+* fix delete single playlist destroy all playlists bug
+
+`2019-02-26`
+* fix qq music songlist not shown bug
+
 `2018-12-30`
 * fix songs missing in kuwo playlist
 * auto detect language

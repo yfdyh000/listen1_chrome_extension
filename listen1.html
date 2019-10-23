@@ -12,8 +12,12 @@
     <!-- link href="css/bootstrap.min.css" rel="stylesheet"-->
     <link href="css/angular-ui-notification.css" rel="stylesheet">
     <link href="css/hotkeys.css" rel="stylesheet">
+    <link href="css/icon.css" rel="stylesheet">
 
-    <script type="text/javascript" src="js/vendor/jquery-3.2.1.min.js"></script>
+    <link href="css/origin.css" rel="stylesheet" id="theme">
+    <link href="css/common.css" rel="stylesheet">
+    
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
     <script type="text/javascript" src="js/vendor/angular.min.js"></script>
     <script src="js/vendor/angular-translate.min.js"></script>
     <script src="js/vendor/angular-translate-loader-static-files.min.js"></script>
@@ -26,6 +30,8 @@
     <script type="text/javascript" src="js/vendor/bigint.js"></script>
     <script type="text/javascript" src="js/vendor/timer.js"></script>
     <script type="text/javascript" src="js/vendor/async.min.js"></script>
+    <script type="text/javascript" src="js/vendor/cryptojs_aes.js"></script>
+    <script type="text/javascript" src="js/vendor/jsencrypt.min.js"></script>
     <script type="text/javascript" src="js/github_api.js"></script>
     <script type="text/javascript" src="js/github.js"></script>
     <script type="text/javascript" src="js/lastfm.js"></script>
@@ -36,6 +42,7 @@
     <script type="text/javascript" src="js/provider/kugou.js"></script>
     <script type="text/javascript" src="js/provider/kuwo.js"></script>
     <script type="text/javascript" src="js/provider/bilibili.js"></script>
+    <script type="text/javascript" src="js/provider/migu.js"></script>
     <script type="text/javascript" src="js/myplaylist.js"></script>
     <script type="text/javascript" src="js/loweb.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
@@ -45,7 +52,7 @@
 
 <body >
     <div ng-controller="PlayController as playCtrl" ng-init="loadLocalSettings()">
-    <div ng-controller="TranslateController">
+    <div ng-controller="ProfileController">
     <div ng-controller="NavigationController">
     <div class="wrap">
         <!-- dialog-->
@@ -168,9 +175,9 @@
                       <span class="icon li-setting"></span>
                     </div>
                     <div ng-if="!isChrome && !isMac" class="window-control">
-                      <svg class="feather" window-control="window_min"><use xlink:href="images/feather-sprite.svg#minimize-2"></use></svg>
-                      <svg class="feather" window-control="window_max"><use xlink:href="images/feather-sprite.svg#maximize" ></use></svg>
-                      <svg class="feather" window-control="window_close"><use xlink:href="images/feather-sprite.svg#x"></use></svg>
+                      <svg class="icon" window-control="window_min"><use xlink:href="images/feather-sprite.svg#minimize-2"></use></svg>
+                      <svg class="icon" window-control="window_max"><use xlink:href="images/feather-sprite.svg#maximize" ></use></svg>
+                      <svg class="icon" window-control="window_close"><use xlink:href="images/feather-sprite.svg#x"></use></svg>
                     </div>
                 </div>
                 <div class="browser flex-scroll-wrapper" infinite-scroll="scrolling()" content-selector="'#playlist-content'">
@@ -188,6 +195,8 @@
                             <div class="source-button" ng-class="{'active':isActiveTab(5)}" ng-click="changeTab(5)">{{_KUWO_MUSIC}}</div>
                             <div class="splitter"></div>
                             <div class="source-button" ng-class="{'active':isActiveTab(6)}" ng-click="changeTab(6)">{{_BILIBILI_MUSIC}}</div>
+                            <div class="splitter"></div>
+                            <div class="source-button" ng-class="{'active':isActiveTab(7)}" ng-click="changeTab(7)">{{_MIGU_MUSIC}}</div>
                         </div>
 
                         <div class="site-wrapper-innerd" id="hotplaylist" >
@@ -217,9 +226,9 @@
                               <li class="source-button" ng-class="{'active':isActiveTab(2)}" ng-click="changeSourceTab(2)"><a>{{_QQ_MUSIC}}</a></li><div class="splitter"></div>
 <!--                               <li  ng-class="{'active':isActiveTab(3)}" ng-click="changeSourceTab(3)" ng-show="isDoubanLogin"><a>豆瓣</a></li> -->
                               <li class="source-button" ng-class="{'active':isActiveTab(4)}" ng-click="changeSourceTab(4)"><a>{{_KUGOU_MUSIC}}</a></li><div class="splitter"></div>
-                              <li class="source-button" ng-class="{'active':isActiveTab(5)}" ng-click="changeSourceTab(5)"><a>{{_KUWO_MUSIC}}</a></li>
-                              <!-- <div class="splitter"></div><li class="source-button" ng-class="{'active':isActiveTab(6)}" ng-click="changeSourceTab(6)"><a>哔哩哔哩</a></li> -->
-                              
+                              <li class="source-button" ng-class="{'active':isActiveTab(5)}" ng-click="changeSourceTab(5)"><a>{{_KUWO_MUSIC}}</a></li><div class="splitter"></div>
+                              <!--  <li class="source-button" ng-class="{'active':isActiveTab(6)}" ng-click="changeSourceTab(6)"><a>{{_BILIBILI_MUSIC}}</a></li>-->
+                             <li class="source-button" ng-class="{'active':isActiveTab(7)}" ng-click="changeSourceTab(7)"><a>{{_MIGU_MUSIC}}</a></li>
                               <svg class="searchspinner" ng-show="loading" version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"  width="40px" height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve"> <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946 s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634 c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/> <path fill="#000" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0 C22.32,8.481,24.301,9.057,26.013,10.047z"> <animateTransform attributeType="xml" attributeName="transform"  type="rotate" from="0 20 20"  to="360 20 20" dur="0.6s" repeatCount="indefinite"/> </path> </svg>
 
                             </ul>
@@ -262,6 +271,13 @@
                             <div>
                               <button class="language-button" ng-click="setLang('zh_CN')">简体中文</button>
                               <button class="language-button" ng-click="setLang('en_US')">English</button>
+                            </div>
+                          </div>
+                          <div class="settings-title"><span>{{_THEME}}<span></div>
+                          <div class="settings-content">
+                            <div>
+                              <button class="theme-button" ng-click="setTheme('white')">{{_THEME_WHITE}}</button>
+                              <button class="theme-button" ng-click="setTheme('black')">{{_THEME_BLACK}}</button>
                             </div>
                           </div>
                           <div class="settings-title"><span>{{_BACKUP_PLAYLIST}}<span></div>
@@ -309,13 +325,20 @@
                               <button class="btn btn-primary confirm-button" ng-show="lastfm.isAuthRequested()" ng-click="lastfm.cancelAuth();">{{_CANCEL_CONNECT}}</button>
                             </div>
                           </div>
-
+                          <div class="settings-title"><span>{{_LYRIC_DISPLAY}}</span></div>
+                          <div class="settings-content">
+                            <div class="shortcut" ng-if="!isChrome" class="btn btn-primary confirm-button" >
+                              <svg class="feather" ng-show="!enableLyricFloatingWindow" ng-click="openLyricFloatingWindow(true)"><use xlink:href="images/feather-sprite.svg#square"></use></svg>
+                              <svg class="feather" ng-show="enableLyricFloatingWindow" ng-click="openLyricFloatingWindow(true)"><use xlink:href="images/feather-sprite.svg#check-square"></use></svg>
+                              <span ng-show="enableLyricFloatingWindow"></span>{{_SHOW_DESKTOP_LYRIC}}
+                            </div>
+                          </div>
                           <div class="settings-title"><span>{{_ABOUT}}<span></div>
                           <div class="settings-content">
                             <p> Listen 1 {{_HOMEPAGE}}: <a open-url="'http://listen1.github.io/listen1/'"> http://listen1.github.io/listen1/ </a> </p>
                             <p> Listen 1 {{_EMAIL}}: githublisten1@gmail.com </p>
                             <p> {{_DESIGNER}}: iparanoid </p>
-                            <p> {{_VERSION}}: 2.1.2 {{_LICENSE_NOTICE}}</p>
+                            <p> {{_VERSION}}: 2.5.1 {{_LICENSE_NOTICE}}</p>
                           </div>
                         </div>
                       </div>
@@ -329,22 +352,22 @@
                                 <div class="detail-head-title">
                                     <h2>{{ playlist_title }}</h2>
                                     <div class="playlist-button-list">
-                                        <div class="playlist-button playadd-button" ng-show="playlist_title!=''">
+                                        <div class="playlist-button playadd-button">
                                             <div class="play-list" ng-click="playMylist(list_id)"><span class="icon li-play-s"></span>
                                               {{_PLAY_ALL}}
                                             </div>
                                             <div class="add-list" ng-click="addMylist(list_id)"><span class="icon li-add"></span></div>
                                         </div>
-                                        <div class="playlist-button clone-button" ng-show="playlist_title!='' && !is_mine" ng-click="clonePlaylist(list_id)">
+                                        <div class="playlist-button clone-button" ng-show="!is_mine" ng-click="clonePlaylist(list_id)">
                                             <div class="play-list"><span class="icon li-songlist"></span><span>{{_ADD_TO_PLAYLIST}}</span></div>
                                         </div>
-                                        <div class="playlist-button edit-button" ng-show="playlist_title!='' && is_mine" ng-click="showDialog(3, {list_id: list_id, playlist_title: playlist_title, cover_img_url: cover_img_url})">
+                                        <div class="playlist-button edit-button" ng-show="is_mine" ng-click="showDialog(3, {list_id: list_id, playlist_title: playlist_title, cover_img_url: cover_img_url})">
                                             <div class="play-list"><svg class="feather"><use xlink:href="images/feather-sprite.svg#edit"></use></svg><span>{{_EDIT}}</span></div>
                                         </div>
-                                        <div class="playlist-button edit-button" ng-show="playlist_title!='' && !is_mine" open-url="playlist_source_url">
+                                        <div class="playlist-button edit-button" ng-show="!is_mine" open-url="playlist_source_url">
                                             <div class="play-list"><span class="icon li-link"></span><span>{{_ORIGIN_LINK}}</span></div>
                                         </div>
-                                        <div class="playlist-button edit-button" ng-show="playlist_title!='' && is_mine" ng-click="showDialog(6)">
+                                        <div class="playlist-button edit-button" ng-show="is_mine" ng-click="showDialog(6)">
                                             <div class="play-list"><svg class="feather"><use xlink:href="images/feather-sprite.svg#git-merge"></use></svg><span>{{_IMPORT}}</span></div>
                                         </div>
                                     </div>
@@ -373,12 +396,12 @@
                         </div>
                         <!-- now playing window-->
                         <div class="songdetail-wrapper" ng-show="window_type=='track'">
-                            <div class="close" ng-class="isMac? 'mac':'' "ng-click="popWindow()"><svg class="feather"><use xlink:href="images/feather-sprite.svg#chevron-down"></use></svg></div>
+                            <div class="close" ng-class="isMac? 'mac':'' "ng-click="popWindow()"><svg class="icon"><use xlink:href="images/feather-sprite.svg#chevron-down"></use></svg></div>
 
                             <div ng-if="!isChrome && !isMac" class="window-control">
-                              <svg class="feather" window-control="window_min"><use xlink:href="images/feather-sprite.svg#minimize-2"></use></svg>
-                              <svg class="feather" window-control="window_max"><use xlink:href="images/feather-sprite.svg#maximize" ></use></svg>
-                              <svg class="feather" window-control="window_close"><use xlink:href="images/feather-sprite.svg#x"></use></svg>
+                              <svg class="icon" window-control="window_min"><use xlink:href="images/feather-sprite.svg#minimize-2"></use></svg>
+                              <svg class="icon" window-control="window_max"><use xlink:href="images/feather-sprite.svg#maximize" ></use></svg>
+                              <svg class="icon" window-control="window_close"><use xlink:href="images/feather-sprite.svg#x"></use></svg>
                             </div>
 
                             <div class="playsong-detail">
@@ -454,6 +477,9 @@
                             <div class="cur" ng-style="{width : volume + '%' }"><span class="btn"><i></i></span></div>
                         </div>
                     </div>
+                </div>
+                <div ng-if="!isChrome" class="lyric-toggle">
+                  <div ng-click="openLyricFloatingWindow(true)" class="lyric-icon" ng-class="{'selected': enableLyricFloatingWindow}">词</div>
                 </div>
             </div>
             <div class="menu" ng-hide="menuHidden">

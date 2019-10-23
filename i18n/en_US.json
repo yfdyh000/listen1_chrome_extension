@@ -6,6 +6,7 @@
  "_KUGOU_MUSIC": "Kugou",
  "_KUWO_MUSIC": "Kuwo",
  "_BILIBILI_MUSIC": "Bilibili",
+ "_MIGU_MUSIC": "Migu",
  "_PLATFORM_UNION": "Platforms",
  "_PLAYLISTS": "PLAYLISTS",
  "_MY_MUSIC": "My Music",
@@ -58,6 +59,8 @@
  "_SHORTCUTS": "Shortcuts",
  "_VIEW_SHORTCUTS_LIST": "View Shortcuts List",
  "_GLOBAL_SHORTCUTS_NOTICE": "Enable Global Shortcuts: Ctrl(Cmd) + Alt + Left Arrow (Previous Track)，Ctrl(Cmd) + Alt + Right Arrow (Next Track)",
+ "_LYRIC_DISPLAY": "Lyric Display",
+ "_SHOW_DESKTOP_LYRIC": "Show desktop lyric",
  "_CONNECT_TO_LASTFM": "Connect to Last.fm",
  "_ABOUT": "About",
  "_HOMEPAGE": "Homepage",
@@ -75,10 +78,15 @@
  "_IMPORTING_PLAYLIST": "Importing playlists...",
  "_IMPORTING_PLAYLIST_SUCCESS": "Success: Import Playlists",
  "_REMOVE_PLAYLIST_SUCCESS": "Success: Remove Playlist",
+ "_REMOVE_SONG_FROM_PLAYLIST_SUCCESS": "Success: Remove Song from Playlist",
  "_ADD_TO_QUEUE_SUCCESS": "Success: Add to Queue",
  "_COPYRIGHT_ISSUE": "Fail because copyright issue, Search other platform instead",
+ "_ADD_TO_PLAYLIST_SUCCESS": "Success: Add to playlist",
  "_INPUT_NEW_PLAYLIST_TITLE": "Input New Playlist Title",
  "_FAIL_OPEN_PLAYLIST_URL": "Fail to Open Playlist url",
  "_EXAMPLE": "Example:",
- "_COMFIRM": "Confirm"
+ "_COMFIRM": "Confirm",
+ "_THEME": "Theme",
+ "_THEME_WHITE": "White Theme",
+ "_THEME_BLACK": "Black Theme"
 }
